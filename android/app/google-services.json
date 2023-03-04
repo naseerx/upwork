@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "840191351457",
+    "project_id": "do-not-call-app",
+    "storage_bucket": "do-not-call-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840191351457:android:484c2366a221438ea8aee0",
+        "android_client_info": {
+          "package_name": "com.example.upwork"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "840191351457-9q2000mhh9o7mbnajafuh9lkq0teoqgg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAT9hDkk4CJ3lE3kICc1imSecJiIBki3NI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "840191351457-9q2000mhh9o7mbnajafuh9lkq0teoqgg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "840191351457-6ju61s4e4d6l6hqa1qne4o83pcrbjdhq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.badiz.donotcall"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

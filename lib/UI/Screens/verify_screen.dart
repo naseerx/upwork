@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:upwork/UI/Utils/app_utils.dart';
 import 'package:upwork/UI/custom_widgets/custom_button.dart';
 import 'package:upwork/UI/custom_widgets/custom_text_field.dart';
@@ -16,6 +21,38 @@ class _VerifyScreenState extends State<VerifyScreen> {
   TextEditingController phone1 = TextEditingController();
   TextEditingController phone2 = TextEditingController();
   TextEditingController phone3 = TextEditingController();
+  TextEditingController email = TextEditingController();
+
+  String message = '';
+
+  verifyPhoneNumber() async {
+    try {
+      var response = await http.post(
+        Uri.parse('API LINK'),
+        body: {
+          'phone1': phone1.text,
+          'phone2': phone2.text,
+          'phone3': phone3.text,
+          'email': email.text,
+          'language': 'en-US'
+        },
+      );
+      if (kDebugMode) {
+        print(response.body);
+      }
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body);
+        message = response.body;
+        if (kDebugMode) {
+          print(jsonData);
+        }
+      }
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +146,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(
+                    controller: phone1,
+                    hintText: 'Enter only numbers e.g 2037278373833'),
                 sizedBox20,
                 const Text(
                   'Phone number 2 (Optional)',
@@ -118,7 +157,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(
+                    controller: phone2,
+                    hintText: 'Enter only numbers e.g 2037278373833'),
                 sizedBox20,
                 const Text(
                   'Phone number 3 (Optional)',
@@ -127,7 +168,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(
+                    controller: phone3,
+                    hintText: 'Enter only numbers e.g 2037278373833'),
                 sizedBox20,
                 const Text(
                   'Email Address',
@@ -136,10 +179,17 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(controller: email, hintText: 'Email'),
                 sizedBox10,
                 CustomElevatedButton(
-                    name: 'Submit', onTap: () {}, background: gPrimaryColor),
+                    name: 'Submit',
+                    onTap: () {
+                      verifyPhoneNumber();
+                      FirebaseAnalytics.instance.logEvent(
+                          name: 'Registration submit',
+                          parameters: {'button_id': 'submit'});
+                    },
+                    background: gPrimaryColor),
                 sizedBox10,
                 RichText(
                   text: TextSpan(
@@ -159,7 +209,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                           style: TextStyle(color: gBlack, fontSize: 18),
                           text:
                               'is required. If you do not receive the verification email within a'
-                                  ' few minutes , please check your spam filter or junk email folder'),
+                              ' few minutes , please check your spam filter or junk email folder'),
                     ],
                   ),
                 ),

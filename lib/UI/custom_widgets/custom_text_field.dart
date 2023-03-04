@@ -33,7 +33,7 @@ class CustomTextField extends StatelessWidget {
               width: 1,
             )),
         hintText: hintText,
-        hintStyle: const TextStyle(color: gBlack)
+        hintStyle: const TextStyle(color: Colors.black26)
       ),
     );
   }

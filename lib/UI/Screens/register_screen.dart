@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:upwork/UI/Utils/app_utils.dart';
 import 'package:upwork/UI/custom_widgets/small_widgets.dart';
 
@@ -17,6 +22,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController phone1 = TextEditingController();
   TextEditingController phone2 = TextEditingController();
   TextEditingController phone3 = TextEditingController();
+  TextEditingController email = TextEditingController();
+
+  registration() async {
+    try {
+      var response = await http.post(
+        Uri.parse('API LINK'),
+        body: {
+          'phone1': phone1.text,
+          'phone2': phone2.text,
+          'phone3': phone3.text,
+          'email': email.text,
+          'language': 'en-US'
+        },
+      );
+      if (kDebugMode) {
+        print(response.body);
+      }
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body);
+        if (kDebugMode) {
+          print(jsonData);
+        }
+      }
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +62,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'You can verify if and when your phone number was register',
-                  style: TextStyle(fontSize: 18),
-                ),
                 sizedBox10,
                 const Text(
                   'Following are the verification steps',
@@ -69,7 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        'Check whether the information is correct',
+                        'Check for errors, Click register',
                         style: TextStyle(fontSize: 17),
                       ),
                     ),
@@ -88,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        'Receive an email with the verification information',
+                        'Check your email for a message form',
                         style: TextStyle(fontSize: 17),
                       ),
                     ),
@@ -99,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'Step 1 of 3',
                   style: TextStyle(
                       fontSize: 25,
-                      color: gPrimaryColor,
+                      color: gDarkBrown,
                       fontWeight: FontWeight.bold),
                 ),
                 sizedBox20,
@@ -110,7 +140,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(
+                    controller: phone1,
+                    hintText: 'Enter only numbers e.g 2037278373833'),
                 sizedBox20,
                 const Text(
                   'Phone number 2 (Optional)',
@@ -119,7 +151,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(
+                    controller: phone2,
+                    hintText: 'Enter only numbers e.g 2037278373833'),
                 sizedBox20,
                 const Text(
                   'Phone number 3 (Optional)',
@@ -128,7 +162,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(
+                    controller: phone3,
+                    hintText: 'Enter only numbers e.g 2037278373833'),
                 sizedBox20,
                 const Text(
                   'Email Address',
@@ -137,10 +173,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 sizedBox10,
-                CustomTextField(controller: phone1, hintText: 'Enter Password'),
+                CustomTextField(controller: email, hintText: 'Email'),
                 sizedBox10,
                 CustomElevatedButton(
-                    name: 'Submit', onTap: () {}, background: gPrimaryColor),
+                    name: 'Submit',
+                    onTap: () {
+                      registration();
+                      FirebaseAnalytics.instance.logEvent(
+                          name: 'Registration submit',
+                          parameters: {'button_id': 'Submit'});
+                    },
+                    background: gDarkBrown),
                 sizedBox10,
                 RichText(
                   text: TextSpan(
