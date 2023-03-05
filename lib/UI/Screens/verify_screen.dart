@@ -28,7 +28,8 @@ class _VerifyScreenState extends State<VerifyScreen> {
   verifyPhoneNumber() async {
     try {
       var response = await http.post(
-        Uri.parse('API LINK'),
+        //due to security reasons i remove the api link
+        Uri.parse('API LINK  HERE'),
         body: {
           'phone1': phone1.text,
           'phone2': phone2.text,
