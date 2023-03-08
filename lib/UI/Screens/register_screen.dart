@@ -4,10 +4,12 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:upwork/UI/Utils/app_utils.dart';
 import 'package:upwork/UI/custom_widgets/small_widgets.dart';
 
+import '../../Core/google_ads_services.dart';
 import '../custom_widgets/custom_button.dart';
 import '../custom_widgets/custom_text_field.dart';
 
@@ -28,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       var response = await http.post(
         //due to security reasons i remove the api link
-      Uri.parse('API LINK'),
+        Uri.parse('API LINK'),
         body: {
           'phone1': phone1.text,
           'phone2': phone2.text,
@@ -53,6 +55,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  BannerAd? _bannerAd;
+
+  Future<InitializationStatus> initGoogleMobileAds() {
+    return MobileAds.instance.initialize();
+  }
+
+  final FirebaseAnalytics _firebaseAnalytics = FirebaseAnalytics.instance;
+
+  void onAdClicked() {
+    _firebaseAnalytics.logEvent(
+      name: 'google_ad_conversion',
+      parameters: {
+        'value': '1.0',
+        'currency': 'USD',
+      },
+    );
+  }
+
+  void _setAnalyticsProperties() async {
+    await _firebaseAnalytics.setUserId(id: '000002');
+    await _firebaseAnalytics.setUserProperty(
+      name: 'tester',
+      value: 'upwork project',
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initGoogleMobileAds();
+    _setAnalyticsProperties();
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          if (kDebugMode) {
+            print('Failed to load a banner ad: ${err.message}');
+          }
+          ad.dispose();
+        },
+      ),
+    ).load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -63,11 +123,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                sizedBox10,
+                sizedBox20,
+
+
+                Row(
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        }, icon: const Icon(Icons.arrow_back_ios)),
+                  ],
+                ),
+                sizedBox20,
+                _bannerAd != null
+                    ? Center(
+                      child: GestureDetector(
+                          onTap: onAdClicked,
+                          child: SizedBox(
+                            width: _bannerAd!.size.width.toDouble(),
+                            height: _bannerAd!.size.height.toDouble(),
+                            child: AdWidget(ad: _bannerAd!),
+                          ),
+                        ),
+                    )
+                    : const Text('Ads Here'),
+                sizedBox20,
+
                 const Text(
                   'Following are the verification steps',
                   style: TextStyle(fontSize: 18),
                 ),
+
                 sizedBox20,
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,

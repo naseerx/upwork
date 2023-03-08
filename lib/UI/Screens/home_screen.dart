@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:upwork/UI/Screens/register_screen.dart';
 import 'package:upwork/UI/Screens/verify_screen.dart';
+import 'package:upwork/UI/Screens/webview_screen.dart';
 import 'package:upwork/UI/Utils/app_utils.dart';
 import 'package:upwork/UI/custom_widgets/custom_button.dart';
 import 'package:upwork/UI/custom_widgets/small_widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../Core/google_ads_services.dart';
 
@@ -80,6 +82,46 @@ class _HomeScreenState extends State<HomeScreen> {
     _bannerAd?.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _launchInBrowser(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _launchInWebViewOrVC(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.inAppWebView,
+      webViewConfiguration: const WebViewConfiguration(
+          headers: <String, String>{'my_header_key': 'my_header_value'}),
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _launchInWebViewWithoutJavaScript(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.inAppWebView,
+      webViewConfiguration: const WebViewConfiguration(enableJavaScript: false),
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _launchInWebViewWithoutDomStorage(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.inAppWebView,
+      webViewConfiguration: const WebViewConfiguration(enableDomStorage: false),
+    )) {
+      throw Exception('Could not launch $url');
+    }
   }
 
   @override
@@ -297,6 +339,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             FirebaseAnalytics.instance.logEvent(
                                 name: 'Resources button',
                                 parameters: {'button_id': 'resources'});
+                            _launchInWebViewWithoutJavaScript(Uri.parse('https://ftc.org/'));
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //         builder: (context) =>
+                            //             const WebViewScreen()));
                           },
                           background: gRed)),
                   sizedBox50,
@@ -309,27 +357,32 @@ class _HomeScreenState extends State<HomeScreen> {
           color: gBrown,
           height: 80,
           width: size.width,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text(
-                'Back to ftc',
-                style: TextStyle(
-                    fontSize: 18,
-                    color: gWhite,
-                    decoration: TextDecoration.underline),
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                '|  Privacy Policy',
-                style: TextStyle(
-                    fontSize: 18,
-                    color: gWhite,
-                    decoration: TextDecoration.underline),
-              ),
-            ],
+          child: InkWell(
+            onTap: () {
+              _launchInBrowser(Uri.parse('https://ftc.org/'));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text(
+                  'Back to ftc',
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: gWhite,
+                      decoration: TextDecoration.underline),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Text(
+                  '|  Privacy Policy',
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: gWhite,
+                      decoration: TextDecoration.underline),
+                ),
+              ],
+            ),
           ),
         ),
       ),

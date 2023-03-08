@@ -4,11 +4,14 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:upwork/UI/Utils/app_utils.dart';
 import 'package:upwork/UI/custom_widgets/custom_button.dart';
 import 'package:upwork/UI/custom_widgets/custom_text_field.dart';
 import 'package:upwork/UI/custom_widgets/small_widgets.dart';
+
+import '../../Core/google_ads_services.dart';
 
 class VerifyScreen extends StatefulWidget {
   const VerifyScreen({Key? key}) : super(key: key);
@@ -55,6 +58,64 @@ class _VerifyScreenState extends State<VerifyScreen> {
     }
   }
 
+  BannerAd? _bannerAd;
+
+  Future<InitializationStatus> initGoogleMobileAds() {
+    return MobileAds.instance.initialize();
+  }
+
+  final FirebaseAnalytics _firebaseAnalytics = FirebaseAnalytics.instance;
+
+  void onAdClicked() {
+    _firebaseAnalytics.logEvent(
+      name: 'google_ad_conversion',
+      parameters: {
+        'value': '1.0',
+        'currency': 'USD',
+      },
+    );
+  }
+
+  void _setAnalyticsProperties() async {
+    await _firebaseAnalytics.setUserId(id: '000002');
+    await _firebaseAnalytics.setUserProperty(
+      name: 'tester',
+      value: 'upwork project',
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initGoogleMobileAds();
+    _setAnalyticsProperties();
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          if (kDebugMode) {
+            print('Failed to load a banner ad: ${err.message}');
+          }
+          ad.dispose();
+        },
+      ),
+    ).load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -65,6 +126,30 @@ class _VerifyScreenState extends State<VerifyScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                sizedBox20,
+                Row(
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.arrow_back_ios)),
+                  ],
+                ),
+                sizedBox20,
+                _bannerAd != null
+                    ? Center(
+                        child: GestureDetector(
+                          onTap: onAdClicked,
+                          child: SizedBox(
+                            width: _bannerAd!.size.width.toDouble(),
+                            height: _bannerAd!.size.height.toDouble(),
+                            child: AdWidget(ad: _bannerAd!),
+                          ),
+                        ),
+                      )
+                    : const Text('Ads Here'),
+                sizedBox20,
                 const Text(
                   'You can verify if and when your phone number was register',
                   style: TextStyle(fontSize: 18),
